@@ -151,7 +151,6 @@ char* request(char* msg, int sockfd, struct sockaddr* ai_addr, size_t addrlen, d
         exit(3);
     }
 
-    //TODO: call recvhttp with remaining time and ret
 
     double timeLeftAfterSend = timeout - difftime(time(NULL), reqStart);
     
