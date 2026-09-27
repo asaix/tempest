@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 
 char* urlEncode(char* original) {
     int origLen = strlen(original);
@@ -36,6 +37,7 @@ char* urlEncode(char* original) {
 
 
 int createGETRequest(char* city, char* buf) {
+    // places request in buf
     int totalsize = snprintf(
         buf, 
         sizeof(buf),
@@ -51,4 +53,30 @@ int createGETRequest(char* city, char* buf) {
 
     return 0;
 }
+
+
+int parseHTTPResponse(char* response, char** headerBuf, char** bodyBuf) {
+    // place headers in headerBuf
+    // place body in bodyBuf
+
+    char* sep = strstr(response, "\r\n\r\n");
+    if (sep == NULL) {
+        fprintf(stderr, "tempest:parseHTTPResponse malformed response");
+        exit(5);
+        // TODO: move this block outside and return a status code instead
+    }
+
+    int headerLen = sep - response;
+    *headerBuf = malloc(headerLen + 1); // TODO: handle fail
+
+    memcpy(*headerBuf, response, headerLen);
+    (*headerBuf)[headerLen] = '\0';
+
+    *bodyBuf = strdup(sep + 4); // TODO: handle fail 
+
+    return 0; 
+
+
+}
+
 // TODO: mark functions as static
