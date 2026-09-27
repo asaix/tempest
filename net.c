@@ -31,7 +31,7 @@ int resolveSocket(char* hostname, char* service, struct addrinfo hints) {
 
 int sendall(int sockfd, char *data, int len, double timeout, time_t startTime)
 {
-    // if startTime is NULL it is initialized in here
+    // if startTime is -1 it is initialized in here
 
     int total = 0;        
     int bytesleft = len; 
@@ -39,14 +39,14 @@ int sendall(int sockfd, char *data, int len, double timeout, time_t startTime)
 
     time_t now;
 
-    if (startTime == NULL) startTime = time(NULL);
+    if (startTime == -1) startTime = time(NULL);
 
     while(total < len) {
         n = send(sockfd, data+total, bytesleft, 0);
         
         now = time(NULL);
         if (difftime(now, startTime) > timeout) {
-            fprintf(stderr, "tempest:sendall timeout %ds", timeout);
+            fprintf(stderr, "tempest:sendall timeout %fs", timeout);
             return -1;
         }
 
@@ -62,6 +62,69 @@ int sendall(int sockfd, char *data, int len, double timeout, time_t startTime)
     // = 0: success
     // < 0: timeout
 } 
+
+int recvhttp(int sockfd, char* buf, int len, double timeout) {
+    // this timeout is only for the recieve bit
+    // pass the remaining time after request() has finished
+
+    // TODO: where exactly do i place the timer start (in request too?
+    time_t respStart = time(NULL);
+
+    struct pollfd pfd;
+    pfd.fd = sockfd;
+    pfd.events = POLLIN;
+
+    // keep polling until conn closed
+    double runningTimeout = timeout;
+    int pollstat;
+    while (true) {
+
+     
+
+        // wait for poll to recv or timeout
+        pollstat = poll(&pfd, 1, runningTimeout);
+        if (pollstat == -1) {
+            // case pollstat auto handled below
+            // -1 = err
+            perror("tempest:recvhttp:poll");
+            exit(3);
+        }
+
+        // check for timeout
+        runningTimeout = timeout - difftime(time(NULL), respStart);
+        if (runningTimeout <= 0) {
+            fprintf(stderr, "tempest:recvhttp: timeout %fs", timeout);
+            return -1;
+        }
+        
+        int nread;
+        if (pfd.revents & POLLIN) {
+            nread = recv(sockfd, buf, len, 0);
+        } else {
+            fprintf(stderr, "tempest:recvhttp:poll unexpected poll revent %d", pfd.revents);
+            exit(3);
+        }
+
+        if (nread == -1) {
+            perror("tempest:recvhttp:recv");
+            exit(3);
+        } else if (nread == 0) {
+            break;
+            // conn closed
+            // proceed to check if entire response is valid
+            // possible because this does not support persistent HTTP conns
+        } else {
+            continue;
+        }
+    }
+
+    // TODO: close sockfd outside
+
+    return 0;
+
+    // -1: timeout
+    //  0: OK
+}
 
 char* request(char* msg, int sockfd, struct sockaddr* ai_addr, size_t addrlen, double timeout) {
     // calls connect(), sendall()
@@ -99,67 +162,6 @@ char* request(char* msg, int sockfd, struct sockaddr* ai_addr, size_t addrlen, d
 
 }
 
-int recvhttp(int sockfd, char* buf, int len, double timeout) {
-    // this timeout is only for the recieve bit
-    // pass the remaining time after request() has finished
 
-    // TODO: where exactly do i place the timer start (in request too?
-    time_t respStart = time(NULL);
-
-    struct pollfd pfd;
-    pfd.fd = sockfd;
-    pfd.events = POLLIN;
-
-    // keep polling until conn closed
-    double runningTimeout = timeout;
-    int pollstat;
-    while (true) {
-
-     
-
-        // wait for poll to recv or timeout
-        pollstat = poll(&pfd, 1, runningTimeout);
-        if (pollstat == -1) {
-            // case pollstat auto handled below
-            // -1 = err
-            perror("tempest:recvhttp:poll");
-            exit(3);
-        }
-
-        // check for timeout
-        runningTimeout = timeout - difftime(time(NULL), respStart);
-        if (runningTimeout <= 0) {
-            fprintf(stderr, "tempest:recvhttp: timeout %ds", timeout);
-            return -1;
-        }
-        
-        int nread;
-        if (pfd.revents & POLLIN) {
-            nread = recv(sockfd, buf, len, 0);
-        } else {
-            fprintf(stderr, "tempest:recvhttp:poll unexpected poll revent %d", pfd.revents);
-            exit(3);
-        }
-
-        if (nread == -1) {
-            perror("tempest:recvhttp:recv");
-            exit(3);
-        } else if (nread == 0) {
-            break;
-            // conn closed
-            // proceed to check if entire response is valid
-            // possible because this does not support persistent HTTP conns
-        } else {
-            continue;
-        }
-    }
-
-    // TODO: close sockfd outside
-
-    return 0;
-
-    // -1: timeout
-    //  0: OK
-}
 
 // TODO: mark priv as static?
