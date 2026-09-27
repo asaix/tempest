@@ -4,6 +4,7 @@
 
 // error code 2: bad args
 // error code 3: network error
+// error code 4: memory error
 
 int main(int argc, char *argv[]) {
 
