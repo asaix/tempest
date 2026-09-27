@@ -46,6 +46,6 @@ int main(int argc, char *argv[]) {
         return 2;
     }
 
-    printf("DEBUG: city=%s rawEnabled=%d\n", city, rawEnabled);
+    printf("DEBUG(main): city=%s rawEnabled=%d\n", city, rawEnabled);
     return 0;   
 }
