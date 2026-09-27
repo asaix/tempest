@@ -3,6 +3,7 @@
 #include <string.h>
 
 // error code 2: bad args
+// error code 3: network error
 
 int main(int argc, char *argv[]) {
 
