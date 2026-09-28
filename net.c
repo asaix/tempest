@@ -19,12 +19,29 @@ int resolveSocket(char* hostname, char* service, struct addrinfo hints) {
     }
 
     int sockfd;
-    sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-    if (sockfd == -1) {
-        perror("tempest:resolveSocket:socket");
-        exit(3);
-    } 
+    struct addrinfo* p;
+    int connStatus;
+    bool connected = false;
 
+    for (p = res; p != NULL; p->ai_next) {
+        sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+        if (sockfd == -1) continue;
+
+        
+        connStatus = connect(sockfd, res->ai_addr, res->ai_addrlen);
+        if (connStatus == -1) continue;
+
+        connected = true;
+        break; // stop on first successful connect
+
+    }
+
+    if (!connected) {
+        perror("tempest:resolveSocket");
+        exit(3);
+    }
+
+ 
     return sockfd;
 
 }
@@ -135,15 +152,7 @@ char* request(char* msg, int sockfd, struct sockaddr* ai_addr, size_t addrlen, d
     // TODO?
 
     time_t reqStart = time(NULL);
-
-    int status;
-    status = connect(sockfd, ai_addr, addrlen);
-
-    if (status == -1) {
-        perror("tempest:request:connect");
-        exit(3);
-    }
-
+    
     int unsent;
     unsent = sendall(sockfd, msg, strlen(msg), timeout, reqStart);
     if (unsent != 0) {
