@@ -24,11 +24,11 @@ int resolveSocket(char* hostname, char* service, struct addrinfo hints) {
     bool connected = false;
 
     for (p = res; p != NULL; p = p->ai_next) {
-        sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+        sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if (sockfd == -1) continue;
 
         
-        connStatus = connect(sockfd, res->ai_addr, res->ai_addrlen);
+        connStatus = connect(sockfd, p->ai_addr, p->ai_addrlen);
         if (connStatus == -1) continue;
 
         connected = true;
