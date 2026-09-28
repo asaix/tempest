@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "include/http.h"
+#include "include/net.h"
+
 // error code 2: bad args
 // error code 3: network error
 // error code 4: memory error
@@ -50,5 +53,60 @@ int main(int argc, char *argv[]) {
     }
 
     printf("DEBUG(main): city=%s rawEnabled=%d\n", city, rawEnabled);
+
+
+    // no error handling here because it's all handled within the function calls 
+
+    // craft request
+
+    int reqSize = 1000;
+    char* req = malloc(reqSize); 
+    if (req == NULL) {
+        fprintf(stderr, "tempest:main Failed to allocate memory for request buffer (%d bytes) \n", reqSize);
+        exit(4);
+    }
+    
+    createGETRequest(city, req, reqSize);
+
+
+    // create socket and connect
+
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
+
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    int sockfd = resolveSocket("wttr.is", "http", hints); 
+
+
+    // send http request and parse response
+
+    const double TIMEOUT = 10000; // 10s
+
+    int responseSize = 1000;
+    char* responseBuf = malloc(responseSize);
+    if (responseBuf == NULL) {
+        fprintf(stderr, "tempest:main Failed to allocate memory for response buffer (%d bytes) \n", responseSize);
+        exit(4);
+    }
+    
+    
+    request(req, responseBuf, responseSize, sockfd, TIMEOUT);
+
+    char* headerBuf;
+    char* bodyBuf;
+    // memory dynamically allocated inside parseHTTPResponse
+
+    parseHTTPResponse(responseBuf, &headerBuf, &bodyBuf);
+
+    
+    // print output
+
+    // TODO: handle invalid loc
+    // TODO: raw must take preference so request and respone headers printed even in case of failure if raw is enabled
+
+
     return 0;   
 }
