@@ -46,9 +46,8 @@ int createGETRequest(char* city, char* buf, int bufsize) {
     );
 
     if (totalsize > bufsize) {
-        fprintf(stderr, "tempest:createGETRequest allocated buffer size insufficient");
+        fprintf(stderr, "tempest:createGETRequest allocated buffer size insufficient\n");
         exit(4);
-        // TODO: move this block outside and return a status code instead
     } 
 
     return 0;
@@ -61,18 +60,28 @@ int parseHTTPResponse(char* response, char** headerBuf, char** bodyBuf) {
 
     char* sep = strstr(response, "\r\n\r\n");
     if (sep == NULL) {
-        fprintf(stderr, "tempest:parseHTTPResponse malformed response");
+        fprintf(stderr, "tempest:parseHTTPResponse malformed response\n");
         exit(5);
-        // TODO: move this block outside and return a status code instead
     }
 
     int headerLen = sep - response;
-    *headerBuf = malloc(headerLen + 1); // TODO: handle fail
+    *headerBuf = malloc(headerLen + 1);
+    if (*headerBuf == NULL) {
+        fprintf(stderr, "tempest:http:parseHTTPResponse Failed to allocate memory for header buffer (%d bytes) \n", headerLen + 1);
+        exit(4);
+    }
+    
 
     memcpy(*headerBuf, response, headerLen);
     (*headerBuf)[headerLen] = '\0';
 
-    *bodyBuf = strdup(sep + 4); // TODO: handle fail 
+    *bodyBuf = strdup(sep + 4); 
+
+    if (*bodyBuf == NULL) {
+        fprintf(stderr, "tempest:http:parseHTTPResponse Failed to allocate memory for body buffer (%d bytes) \n", strlen(sep+4) + 1);
+        exit(4);
+    }
+    
 
     return 0; 
 
