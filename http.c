@@ -78,7 +78,7 @@ int parseHTTPResponse(char* response, char** headerBuf, char** bodyBuf) {
     *bodyBuf = strdup(sep + 4); 
 
     if (*bodyBuf == NULL) {
-        fprintf(stderr, "tempest:http:parseHTTPResponse Failed to allocate memory for body buffer (%d bytes) \n", strlen(sep+4) + 1);
+        fprintf(stderr, "tempest:http:parseHTTPResponse Failed to allocate memory for body buffer (%ld bytes) \n", strlen(sep+4) + 1);
         exit(4);
     }
     

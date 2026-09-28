@@ -23,7 +23,7 @@ int resolveSocket(char* hostname, char* service, struct addrinfo hints) {
     int connStatus;
     bool connected = false;
 
-    for (p = res; p != NULL; p->ai_next) {
+    for (p = res; p != NULL; p = p->ai_next) {
         sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
         if (sockfd == -1) continue;
 
@@ -143,7 +143,7 @@ int recvhttp(int sockfd, char* buf, int bufSize, double timeout) {
     //  0: OK
 }
 
-char* request(char* msg, char* buf, int bufSize, int sockfd, double timeout) {
+int request(char* msg, char* buf, int bufSize, int sockfd, double timeout) {
     // calls sendall() using an ALREADY CONNECTED socket
     // places  raw http response to be passed up to a parser in buf
 
