@@ -64,7 +64,7 @@ int sendall(int sockfd, char *data, int len, double timeout, time_t startTime)
         now = time(NULL);
         if (difftime(now, startTime) > timeout) {
             fprintf(stderr, "tempest:sendall timeout %fs", timeout);
-            return -1;
+            exit(3);
         }
 
         if (n == -1) {
@@ -80,11 +80,10 @@ int sendall(int sockfd, char *data, int len, double timeout, time_t startTime)
     // < 0: timeout
 } 
 
-int recvhttp(int sockfd, char* buf, int len, double timeout) {
+int recvhttp(int sockfd, char* buf, int bufSize, double timeout) {
     // this timeout is only for the recieve bit
     // pass the remaining time after request() has finished
 
-    // TODO: where exactly do i place the timer start (in request too?
     time_t respStart = time(NULL);
 
     struct pollfd pfd;
@@ -101,8 +100,7 @@ int recvhttp(int sockfd, char* buf, int len, double timeout) {
         // wait for poll to recv or timeout
         pollstat = poll(&pfd, 1, runningTimeout);
         if (pollstat == -1) {
-            // case pollstat auto handled below
-            // -1 = err
+            // -1 = non-timeout error
             perror("tempest:recvhttp:poll");
             exit(3);
         }
@@ -111,16 +109,19 @@ int recvhttp(int sockfd, char* buf, int len, double timeout) {
         runningTimeout = timeout - difftime(time(NULL), respStart);
         if (runningTimeout <= 0) {
             fprintf(stderr, "tempest:recvhttp: timeout %fs", timeout);
-            return -1;
+            exit(3);
         }
         
         int nread;
-        if (pfd.revents & POLLIN) {
-            nread = recv(sockfd, buf, len, 0);
-        } else {
+        if (pfd.revents & (POLLERR | POLLNVAL)) {
+    
             fprintf(stderr, "tempest:recvhttp:poll unexpected poll revent %d", pfd.revents);
             exit(3);
         }
+        // if POLLHUP or POLLIN, read
+
+        nread = recv(sockfd, buf, bufSize, 0);
+
 
         if (nread == -1) {
             perror("tempest:recvhttp:recv");
@@ -136,14 +137,13 @@ int recvhttp(int sockfd, char* buf, int len, double timeout) {
     }
 
     // TODO: close sockfd outside
-
     return 0;
 
     // -1: timeout
     //  0: OK
 }
 
-char* request(char* msg, char* buf, int sockfd, double timeout) {
+char* request(char* msg, char* buf, int bufSize, int sockfd, double timeout) {
     // calls sendall() using an ALREADY CONNECTED socket
     // places  raw http response to be passed up to a parser in buf
 
@@ -159,12 +159,13 @@ char* request(char* msg, char* buf, int sockfd, double timeout) {
 
     double timeLeftAfterSend = timeout - difftime(time(NULL), reqStart);
     
-    recvhttp(sockfd, buf, 250, timeLeftAfterSend);
+    int stat;
+    stat = recvhttp(sockfd, buf, bufSize, timeLeftAfterSend);
 
-    return buf;
+    return stat;
+    // -1 = timeout
+    //  0 = OK
 
 }
 
 
-
-// TODO: mark priv as static?

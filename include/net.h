@@ -9,7 +9,6 @@
 
 int resolveSocket(char* hostname, char* service, struct addrinfo hints);
 
-char* request(char* msg, int sockfd, struct sockaddr* ai_addr, size_t addrlen, double timeout);
-
+char* request(char* msg, char* buf, int bufSize, int sockfd, double timeout);
 
 #endif
