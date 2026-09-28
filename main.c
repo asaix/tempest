@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "include/http.h"
 #include "include/net.h"
+
+
 
 // error code 2: bad args
 // error code 3: network error
@@ -13,7 +16,7 @@
 int main(int argc, char *argv[]) {
 
     char* city;
-    bool rawEnabled;
+    bool rawEnabled = false;
 
     if (argc == 1) {
         // err: no args
@@ -52,12 +55,12 @@ int main(int argc, char *argv[]) {
         return 2;
     }
 
-    printf("DEBUG(main): city=%s rawEnabled=%d\n", city, rawEnabled);
+    // printf("DEBUG(main): city=%s rawEnabled=%d\n", city, rawEnabled);
 
 
     // no error handling here because it's all handled within the function calls 
 
-    // craft request
+    // == CRAFT REQUEST == 
 
     int reqSize = 1000;
     char* req = malloc(reqSize); 
@@ -69,7 +72,7 @@ int main(int argc, char *argv[]) {
     createGETRequest(city, req, reqSize);
 
 
-    // create socket and connect
+    // == CREATE SOCKET AND CONNECT == 
 
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
@@ -81,7 +84,7 @@ int main(int argc, char *argv[]) {
     int sockfd = resolveSocket("wttr.is", "http", hints); 
 
 
-    // send http request and parse response
+    // == SEND HTTP REQUEST == 
 
     const double TIMEOUT = 10000; // 10s
 
@@ -94,18 +97,27 @@ int main(int argc, char *argv[]) {
     
     
     request(req, responseBuf, responseSize, sockfd, TIMEOUT);
+    close(sockfd);
+
+
+    // == PARSE RESPONSE AND PRINT == 
 
     char* headerBuf;
     char* bodyBuf;
+    int responseCode = -1;
     // memory dynamically allocated inside parseHTTPResponse
 
-    parseHTTPResponse(responseBuf, &headerBuf, &bodyBuf);
+    responseCode = parseHTTPResponse(responseBuf, &headerBuf, &bodyBuf);
 
-    
-    // print output
+    if (rawEnabled) {
+        printf("%s", responseBuf);
+    } else if (responseCode == 200) {
+        printf("%s", bodyBuf);
 
-    // TODO: handle invalid loc
-    // TODO: raw must take preference so request and respone headers printed even in case of failure if raw is enabled
+    } else {
+        fprintf(stderr, "tempest: invalid location\n");
+        exit(5);
+    } 
 
 
     return 0;   

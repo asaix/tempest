@@ -136,7 +136,6 @@ int recvhttp(int sockfd, char* buf, int bufSize, double timeout) {
         }
     }
 
-    // TODO: close sockfd outside
     return 0;
 
     // -1: timeout
