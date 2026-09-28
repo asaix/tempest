@@ -57,6 +57,7 @@ int createGETRequest(char* city, char* buf, int bufsize) {
 int parseHTTPResponse(char* response, char** headerBuf, char** bodyBuf) {
     // place headers in headerBuf
     // place body in bodyBuf
+    // returns request status code
 
     char* sep = strstr(response, "\r\n\r\n");
     if (sep == NULL) {
@@ -83,7 +84,13 @@ int parseHTTPResponse(char* response, char** headerBuf, char** bodyBuf) {
     }
     
 
-    return 0; 
+    if (strlen(response) <= 13) return -1; // status code = -1 if response is too short
+
+    // parse status code
+    char code[4];
+    memcpy(code, response + 9, 3);  
+    code[3] = '\0';
+    return (int)atoi(code);
 
 
 }
