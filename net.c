@@ -14,7 +14,7 @@ int resolveSocket(char* hostname, char* service, struct addrinfo hints) {
 
     int status;
     if ((status = getaddrinfo(hostname, service, &hints, &res)) != 0) {
-        fprintf(stderr, "tempest:resolveSocket:getaddrinfo failed to connect [%s]", gai_strerror(status));
+        fprintf(stderr, "tempest:resolveSocket:getaddrinfo failed to connect [%s]\n", gai_strerror(status));
         exit(3);
     }
 
@@ -63,7 +63,7 @@ int sendall(int sockfd, char *data, int len, double timeout, time_t startTime)
         
         now = time(NULL);
         if (difftime(now, startTime) > timeout) {
-            fprintf(stderr, "tempest:sendall timeout %fs", timeout);
+            fprintf(stderr, "tempest:sendall timeout %fs\n", timeout);
             exit(3);
         }
 
@@ -108,14 +108,14 @@ int recvhttp(int sockfd, char* buf, int bufSize, double timeout) {
         // check for timeout
         runningTimeout = timeout - difftime(time(NULL), respStart);
         if (runningTimeout <= 0) {
-            fprintf(stderr, "tempest:recvhttp: timeout %fs", timeout);
+            fprintf(stderr, "tempest:recvhttp: timeout %fs\n", timeout);
             exit(3);
         }
         
         int nread;
         if (pfd.revents & (POLLERR | POLLNVAL)) {
     
-            fprintf(stderr, "tempest:recvhttp:poll unexpected poll revent %d", pfd.revents);
+            fprintf(stderr, "tempest:recvhttp:poll unexpected poll revent %d\n", pfd.revents);
             exit(3);
         }
         // if POLLHUP or POLLIN, read
