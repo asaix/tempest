@@ -143,13 +143,9 @@ int recvhttp(int sockfd, char* buf, int len, double timeout) {
     //  0: OK
 }
 
-char* request(char* msg, int sockfd, struct sockaddr* ai_addr, size_t addrlen, double timeout) {
-    // calls connect(), sendall()
-    // returns raw http response to be passed up to a parser
-
-    // WARN: allocates char* buf to 250 bytes and returns it
-    //       ideally we'd want to have it allocated outside the fn and passed down
-    // TODO?
+char* request(char* msg, char* buf, int sockfd, double timeout) {
+    // calls sendall() using an ALREADY CONNECTED socket
+    // places  raw http response to be passed up to a parser in buf
 
     time_t reqStart = time(NULL);
     
@@ -163,7 +159,6 @@ char* request(char* msg, int sockfd, struct sockaddr* ai_addr, size_t addrlen, d
 
     double timeLeftAfterSend = timeout - difftime(time(NULL), reqStart);
     
-    char* buf = malloc(250);
     recvhttp(sockfd, buf, 250, timeLeftAfterSend);
 
     return buf;
