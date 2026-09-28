@@ -87,5 +87,3 @@ int parseHTTPResponse(char* response, char** headerBuf, char** bodyBuf) {
 
 
 }
-
-// TODO: mark functions as static
