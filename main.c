@@ -109,13 +109,26 @@ int main(int argc, char *argv[]) {
 
     responseCode = parseHTTPResponse(responseBuf, &headerBuf, &bodyBuf);
 
-    if (rawEnabled) {
-        printf("%s", responseBuf);
-    } else if (responseCode == 200) {
-        printf("%s", bodyBuf);
+    // printf("%d", responseCode);
 
-    } else {
-        fprintf(stderr, "tempest: invalid location\n");
+
+    if (responseCode == 200) {
+        if (rawEnabled) {
+            printf("%s", req);
+            printf("%s", responseBuf);
+        } else {
+            printf("%s", bodyBuf);
+
+        }
+    }
+    else {
+        // invalid location
+
+        if (rawEnabled) {
+            printf("%s", req);
+            printf("%s", responseBuf);
+        }
+        fprintf(stderr, "\ntempest: invalid location\n");
         exit(5);
     } 
 
