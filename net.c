@@ -13,6 +13,8 @@ int resolveSocket(char* hostname, char* service, struct addrinfo hints, double t
     // call getaddrinfo() and return sockfd = socket(...)
 
     struct addrinfo* res;
+    double runningTimeout = timeout;
+    time_t startTime = time(NULL);
 
     int status;
     if ((status = getaddrinfo(hostname, service, &hints, &res)) != 0) {
@@ -28,6 +30,12 @@ int resolveSocket(char* hostname, char* service, struct addrinfo hints, double t
     int pollstat;
 
     for (p = res; p != NULL; p = p->ai_next) {
+        runningTimeout = timeout - difftime(time(NULL), startTime);
+
+        if (runningTimeout <= 0) {
+            fprintf(stderr, "tempest:resolveSocket: timeout %fs\n", timeout);
+            exit(3);
+        }
         sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if (sockfd == -1) continue;
 
@@ -43,7 +51,7 @@ int resolveSocket(char* hostname, char* service, struct addrinfo hints, double t
             pfd.fd = sockfd;
             pfd.events = POLLOUT;
 
-            pollstat = poll(&pfd, 1, timeout*1000); // ms
+            pollstat = poll(&pfd, 1, runningTimeout*1000); // ms
             if (pollstat == 0) {
                 errno = ETIMEDOUT; // so perror reports the timeout, then try next addr
             } else if (pollstat == 1) {

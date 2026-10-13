@@ -6,6 +6,7 @@
 #include "include/http.h"
 #include "include/net.h"
 
+#include <time.h>
 
 // error code 1: generic error
 // error code 2: bad args
@@ -83,7 +84,9 @@ int main(int argc, char *argv[]) {
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
 
-    int sockfd = resolveSocket("wttr.is", "http", hints, TIMEOUT);
+    time_t startTime = time(NULL);
+
+    int sockfd = resolveSocket("wttr.is", "http", hints, TIMEOUT - difftime(time(NULL), startTime));
 
 
     // == SEND HTTP REQUEST ==
@@ -96,7 +99,7 @@ int main(int argc, char *argv[]) {
     }
     
     
-    request(req, responseBuf, responseSize, sockfd, TIMEOUT);
+    request(req, responseBuf, responseSize, sockfd, TIMEOUT - difftime(time(NULL), startTime));
     close(sockfd);
 
 
