@@ -45,7 +45,7 @@ int createGETRequest(char* city, char* buf, int bufsize) {
         urlEncode(city)
     );
 
-    if (totalsize > bufsize) {
+    if (totalsize >= bufsize) {
         fprintf(stderr, "tempest:createGETRequest allocated buffer size insufficient\n");
         exit(4);
     } 
