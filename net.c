@@ -7,6 +7,7 @@
 #include <time.h>
 #include <poll.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 int resolveSocket(char* hostname, char* service, struct addrinfo hints, double timeout) { 
     // call getaddrinfo() and return sockfd = socket(...)
@@ -44,25 +45,23 @@ int resolveSocket(char* hostname, char* service, struct addrinfo hints, double t
 
             pollstat = poll(&pfd, 1, timeout*1000); // ms
             if (pollstat == 0) {
-                fprintf(stderr, "tempest:resolveSocket: connection timed out");
-                exit(3);
+                errno = ETIMEDOUT; // so perror reports the timeout, then try next addr
             } else if (pollstat == 1) {
                 // connect finished, check if it succeeded
                 int err;
                 socklen_t errLen = sizeof(err);
-                if (getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &err, &errLen) == -1) {
-                    fprintf(stderr, "tempest:resolveSocket:getsockopt: failed to get socket info");
-                    exit(1);
-                }
+                if (getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &err, &errLen) == -1) err = errno;
 
                 if (err == 0) connStatus = 0;
                 else {
                     errno = err;
-                    perror("tempest:resolveSocket");
                 }
             }
         }
-        if (connStatus == -1) continue;
+        if (connStatus == -1) {
+            close(sockfd);
+            continue;
+        }
 
         fcntl(sockfd, F_SETFL, flags); // back to blocking
 
@@ -76,7 +75,7 @@ int resolveSocket(char* hostname, char* service, struct addrinfo hints, double t
         exit(3);
     }
 
- 
+    freeaddrinfo(res);
     return sockfd;
 
 }
