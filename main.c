@@ -7,7 +7,7 @@
 #include "include/net.h"
 
 
-
+// error code 1: generic error
 // error code 2: bad args
 // error code 3: network error
 // error code 4: memory error
@@ -72,7 +72,9 @@ int main(int argc, char *argv[]) {
     createGETRequest(city, req, reqSize);
 
 
-    // == CREATE SOCKET AND CONNECT == 
+    // == CREATE SOCKET AND CONNECT ==
+
+    const double TIMEOUT = 10; // 10s
 
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
@@ -81,12 +83,10 @@ int main(int argc, char *argv[]) {
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
 
-    int sockfd = resolveSocket("wttr.is", "http", hints); 
+    int sockfd = resolveSocket("wttr.is", "http", hints, TIMEOUT);
 
 
-    // == SEND HTTP REQUEST == 
-
-    const double TIMEOUT = 10; // 10s
+    // == SEND HTTP REQUEST ==
 
     int responseSize = 1000;
     char* responseBuf = malloc(responseSize);

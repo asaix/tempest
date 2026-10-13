@@ -6,8 +6,9 @@
 #include <string.h>
 #include <time.h>
 #include <poll.h>
+#include <fcntl.h>
 
-int resolveSocket(char* hostname, char* service, struct addrinfo hints) { 
+int resolveSocket(char* hostname, char* service, struct addrinfo hints, double timeout) { 
     // call getaddrinfo() and return sockfd = socket(...)
 
     struct addrinfo* res;
@@ -22,14 +23,48 @@ int resolveSocket(char* hostname, char* service, struct addrinfo hints) {
     struct addrinfo* p;
     int connStatus;
     bool connected = false;
+    int flags;
+    int pollstat;
 
     for (p = res; p != NULL; p = p->ai_next) {
         sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if (sockfd == -1) continue;
 
-        
+        // get current flags
+        flags = fcntl(sockfd, F_GETFL);
+        // make the socket non blocking
+        fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
+
         connStatus = connect(sockfd, p->ai_addr, p->ai_addrlen);
+        if (connStatus == -1 && errno == EINPROGRESS) {
+            // wait for connect to finish or timeout
+            struct pollfd pfd;
+            pfd.fd = sockfd;
+            pfd.events = POLLOUT;
+
+            pollstat = poll(&pfd, 1, timeout*1000); // ms
+            if (pollstat == 0) {
+                fprintf(stderr, "tempest:resolveSocket: connection timed out");
+                exit(3);
+            } else if (pollstat == 1) {
+                // connect finished, check if it succeeded
+                int err;
+                socklen_t errLen = sizeof(err);
+                if (getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &err, &errLen) == -1) {
+                    fprintf(stderr, "tempest:resolveSocket:getsockopt: failed to get socket info");
+                    exit(1);
+                }
+
+                if (err == 0) connStatus = 0;
+                else {
+                    errno = err;
+                    perror("tempest:resolveSocket")
+                }
+            }
+        }
         if (connStatus == -1) continue;
+
+        fcntl(sockfd, F_SETFL, flags); // back to blocking
 
         connected = true;
         break; // stop on first successful connect
