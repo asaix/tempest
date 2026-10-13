@@ -125,11 +125,16 @@ int sendall(int sockfd, char *data, int len, double timeout, time_t startTime)
         }
 
 
-        n = send(sockfd, data+total, bytesleft, 0);
-        
+        n = send(sockfd, data+total, bytesleft, MSG_NOSIGNAL); // EPIPE instead of SIGPIPE on closed conn
+
 
         if (n == -1) {
-            continue; // keep trying on failure until timeout 
+            // temporary errors: retry until timeout
+            if (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK) continue;
+
+            // fatal error
+            perror("tempest:sendall:send");
+            exit(3);
         }
         total += n;
         bytesleft -= n;
