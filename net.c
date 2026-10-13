@@ -127,11 +127,10 @@ int sendall(int sockfd, char *data, int len, double timeout, time_t startTime)
         bytesleft -= n;
     }
 
-    return bytesleft; 
-    // > 0: num bytes left
-    // = 0: success
-    // < 0: timeout
-} 
+    return bytesleft;
+    // always 0: only returns once everything is sent
+    // exits on timeout or error
+}
 
 int recvhttp(int sockfd, char* buf, int bufSize, double timeout) {
     // this timeout is only for the recieve bit
@@ -221,12 +220,7 @@ int request(char* msg, char* buf, int bufSize, int sockfd, double timeout) {
 
     time_t reqStart = time(NULL);
     
-    int unsent;
-    unsent = sendall(sockfd, msg, strlen(msg), timeout, reqStart);
-    if (unsent != 0) {
-        perror("tempest:request:sendall");
-        exit(3);
-    }
+    sendall(sockfd, msg, strlen(msg), timeout, reqStart); // exits on failure
 
 
     double timeLeftAfterSend = timeout - difftime(time(NULL), reqStart);
