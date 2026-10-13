@@ -11,7 +11,10 @@ char* urlEncode(char* original) {
     // worst case replace all with %xy
     char* output = malloc(3*origLen + 1);
 
-    if (output == NULL) return NULL;
+    if (output == NULL) {
+        fprintf(stderr, "tempest:http:urlEncode failed to allocate memory");
+        exit(4);
+    }
 
     // hex[i] = hexadecimal for i
     const char* hex = "0123456789ABCDEF";
