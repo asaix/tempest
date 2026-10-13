@@ -192,8 +192,18 @@ int recvhttp(int sockfd, char* buf, int bufSize, double timeout) {
             exit(3);
         }
 
-        // buffer too small?
+        // buffer full: read 1 more byte to see if the response is done or too large
         if (totalRead == bufSize - 1) {
+            char extra;
+            nread = recv(sockfd, &extra, 1, 0);
+
+            if (nread == -1) {
+                perror("tempest:recvhttp:recv");
+                exit(3);
+            } else if (nread == 0) {
+                break; // conn closed, response fit exactly
+            }
+
             fprintf(stderr, "tempest:recvhttp: response too large for buffer (%d bytes)\n", bufSize);
             exit(3);
         }
