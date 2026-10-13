@@ -207,8 +207,8 @@ int recvhttp(int sockfd, char* buf, int bufSize, double timeout) {
 
     return 0;
 
-    // -1: timeout
-    //  0: OK
+    // always 0: only returns once the conn is closed
+    // exits on timeout or error
 }
 
 int request(char* msg, char* buf, int bufSize, int sockfd, double timeout) {
@@ -229,8 +229,7 @@ int request(char* msg, char* buf, int bufSize, int sockfd, double timeout) {
     stat = recvhttp(sockfd, buf, bufSize, timeLeftAfterSend);
 
     return stat;
-    // -1 = timeout
-    //  0 = OK
+    // always 0: exits on timeout or error
 
 }
 
