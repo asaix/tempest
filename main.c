@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
 
     // == SEND HTTP REQUEST == 
 
-    const double TIMEOUT = 10000; // 10s
+    const double TIMEOUT = 10; // 10s
 
     int responseSize = 1000;
     char* responseBuf = malloc(responseSize);
