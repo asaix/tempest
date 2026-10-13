@@ -115,6 +115,8 @@ int recvhttp(int sockfd, char* buf, int bufSize, double timeout) {
     double runningTimeout = timeout;
     int pollstat;
 
+    int totalRead = 0;
+
     while (true) {
 
         // calc remaining timeout
@@ -143,9 +145,15 @@ int recvhttp(int sockfd, char* buf, int bufSize, double timeout) {
             fprintf(stderr, "tempest:recvhttp:poll unexpected poll revent %d\n", pfd.revents);
             exit(3);
         }
+
+        // buffer too small?
+        if (totalRead == bufSize - 1) {
+            fprintf(stderr, "tempest:recvhttp: response too large for buffer (%d bytes)\n", bufSize);
+            exit(3);
+        }
         // if POLLHUP or POLLIN, read
 
-        nread = recv(sockfd, buf, bufSize, 0);
+        nread = recv(sockfd, buf + totalRead, bufSize - 1 - totalRead, 0);
 
 
         if (nread == -1) {
@@ -157,9 +165,12 @@ int recvhttp(int sockfd, char* buf, int bufSize, double timeout) {
             // proceed to check if entire response is valid
             // possible because this does not support persistent HTTP conns
         } else {
+            totalRead += nread;
             continue;
         }
     }
+
+    buf[totalRead] = '\0';
 
     return 0;
 
