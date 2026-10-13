@@ -12,7 +12,7 @@ char* urlEncode(char* original) {
     char* output = malloc(3*origLen + 1);
 
     if (output == NULL) {
-        fprintf(stderr, "tempest:http:urlEncode failed to allocate memory");
+        fprintf(stderr, "tempest:http:urlEncode failed to allocate memory\n");
         exit(4);
     }
 
