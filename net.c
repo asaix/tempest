@@ -58,7 +58,7 @@ int resolveSocket(char* hostname, char* service, struct addrinfo hints, double t
                 if (err == 0) connStatus = 0;
                 else {
                     errno = err;
-                    perror("tempest:resolveSocket")
+                    perror("tempest:resolveSocket");
                 }
             }
         }
