@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <strings.h>
 
 char* urlEncode(char* original) {
     int origLen = strlen(original);
@@ -64,7 +65,7 @@ int parseHTTPResponse(char* response, char** headerBuf, char** bodyBuf) {
 
     char* sep = strstr(response, "\r\n\r\n");
     if (sep == NULL) {
-        fprintf(stderr, "tempest:parseHTTPResponse malformed response\n");
+        fprintf(stderr, "tempest:parseHTTPResponse malformed response (no header terminator)\n");
         exit(5);
     }
 
@@ -85,7 +86,26 @@ int parseHTTPResponse(char* response, char** headerBuf, char** bodyBuf) {
         fprintf(stderr, "tempest:http:parseHTTPResponse Failed to allocate memory for body buffer (%ld bytes) \n", strlen(sep+4) + 1);
         exit(4);
     }
-    
+
+    // check against Content-Length for incomplete body
+    char* line = *headerBuf;
+    while (line != NULL) {
+        if (strncasecmp(line, "Content-Length:", 15) == 0) {
+            // found CL line
+            long contentLength = strtol(line + 15, NULL, 10);
+            size_t bodyLen = strlen(*bodyBuf);
+
+            if (contentLength != (long)bodyLen) {
+                fprintf(stderr, "tempest:http:parseHTTPResponse incomplete response (got %zu of %ld bytes)\n", bodyLen, contentLength);
+                exit(5);
+            }
+            break;
+        }
+
+        line = strstr(line, "\r\n");
+        if (line != NULL) line += 2;
+    }
+
 
     if (strlen(response) <= 13) return -1; // status code = -1 if response is too short
 
