@@ -123,6 +123,10 @@ int main(int argc, char *argv[]) {
             printf("%s", bodyBuf);
 
         }
+    } 
+    else if (responseCode == -1) {
+        fprintf(stderr, "tempest: malformed response - could not read status code\n");
+        exit(5);
     }
     else {
         // invalid location
