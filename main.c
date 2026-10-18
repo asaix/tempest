@@ -102,6 +102,11 @@ int main(int argc, char *argv[]) {
     request(req, responseBuf, responseSize, sockfd, TIMEOUT - difftime(time(NULL), startTime));
     close(sockfd);
 
+    // print raw before parsing so it's still printed if the response is malformed
+    if (rawEnabled) {
+        printf("%s", req);
+        printf("%s", responseBuf);
+    }
 
     // == PARSE RESPONSE AND PRINT == 
 
@@ -116,25 +121,16 @@ int main(int argc, char *argv[]) {
 
 
     if (responseCode == 200) {
-        if (rawEnabled) {
-            printf("%s", req);
-            printf("%s", responseBuf);
-        } else {
+        if (!rawEnabled) {
             printf("%s", bodyBuf);
-
         }
-    } 
+    }
     else if (responseCode == -1) {
         fprintf(stderr, "tempest: malformed response - could not read status code\n");
         exit(5);
     }
     else {
         // invalid location
-
-        if (rawEnabled) {
-            printf("%s", req);
-            printf("%s", responseBuf);
-        }
         fprintf(stderr, "\ntempest: invalid location\n");
         exit(5);
     } 
