@@ -1,0 +1,11 @@
+*.o
+*.d
+*.a
+*~
+.DS_Store
+compile_commands.json
+.cache/
+.vscode/
+/tempest
+error-path-tests.md
+review.md
