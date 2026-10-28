@@ -61,6 +61,8 @@ then unpack it and run the install script, which copies `tempest` to
 tar -xzf tempest-linux-x86_64.tar.gz
 ./tempest-linux-x86_64/install.sh
 ```
+
+To remove it, run `./tempest-linux-x86_64/uninstall.sh`.
 ### From source
 
 ```sh
