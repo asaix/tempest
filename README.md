@@ -54,12 +54,12 @@ when the server sends back something tempest can't handle.
 ### From a release
 
 Download `tempest-linux-x86_64.tar.gz` from the [latest release](../../releases/latest),
-then unpack it and copy the binary somewhere on your `PATH`:
+then unpack it and run the install script, which copies `tempest` to
+`~/.local/bin`:
 
 ```sh
 tar -xzf tempest-linux-x86_64.tar.gz
-mkdir -p ~/.local/bin
-cp tempest-linux-x86_64/tempest ~/.local/bin/
+./tempest-linux-x86_64/install.sh
 ```
 ### From source
 

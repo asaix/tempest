@@ -19,7 +19,7 @@ jobs:
       - name: Package
         run: |
           mkdir tempest-linux-x86_64
-          cp tempest README.md LICENSE tempest-linux-x86_64/
+          cp tempest install.sh README.md LICENSE tempest-linux-x86_64/
           tar -czf tempest-linux-x86_64.tar.gz tempest-linux-x86_64
 
       - name: Create release
