@@ -20,16 +20,14 @@ int main(int argc, char *argv[]) {
     bool rawEnabled = false;
 
     if (argc == 1) {
-        // err: no args
-        fprintf(stderr, "tempest: no location provided\n");
-        return 2; 
+        city = "";
     }
     if (argc == 2) {
-        // err: 1 arg && arg = --raw
         switch (strcmp("--raw", argv[1])) {
-            case 0:
-                fprintf(stderr, "tempest: no location provided\n");
-                return 2;
+            case 0: // only --raw, no location
+                city = "";
+                rawEnabled = true;
+                break;
             default: // OK, SET city
                 city = argv[1];
         }

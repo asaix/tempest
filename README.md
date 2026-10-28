@@ -8,7 +8,7 @@ tempest is a tiny C program that fetches the current weather conditions for a ci
 [wttr.is](https://wttr.is) and prints them.
 
 ```
-$ ./tempest London
+$ ./tempest
 Weather report: London
 
      \  /       Partly Cloudy
@@ -22,14 +22,15 @@ Weather report: London
 ## Usage
 
 ```
-tempest <location> [--raw]
+tempest [location] [--raw]
 ```
 
-- `<location>`: a city or place name. Quote it if it contains spaces
-  (`./tempest "New York"`). 
+- `location`: a city or place name. Quote it if it contains spaces
+  (`./tempest "New York"`). Leave it out and wttr.is guesses your location from
+  your IP address.
 - `--raw`: print the HTTP request that was sent and the full response
-  (status line, headers and body) instead of only the forecast. It must come
-  after the location.
+  (status line, headers and body) instead of only the forecast. If you give a
+  location, `--raw` must come after it.
 
 ```
 $ ./tempest London --raw
@@ -90,7 +91,7 @@ make clean    # removes it
 | ---- | ------- |
 | 0 | Success |
 | 1 | Generic error (reserved, not currently used) |
-| 2 | Bad arguments (missing location, misplaced or unknown flag, too many arguments) |
+| 2 | Bad arguments (misplaced flag, too many arguments) |
 | 3 | Network error (DNS failure, connect/send/receive error, timeout, response too large) |
 | 4 | Memory error (allocation failed or a fixed buffer was too small) |
 | 5 | Malformed response or invalid location (non-`200` status) |
