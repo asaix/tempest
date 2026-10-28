@@ -83,7 +83,7 @@ This program is licensed under the [MIT License](LICENSE).
 
 Contributions are welcome. Please submit a PR or issue on Github.
 
-## AI use
+## AI usage
 
 AI was only used to generate the implementation diagram. 
 
