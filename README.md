@@ -48,9 +48,31 @@ The raw exchange is printed before the response is parsed, so you still see it
 when the server sends back something tempest can't handle.
 
 
+## Installing
+
+### From a release
+
+Download `tempest-linux-x86_64.tar.gz` from the [latest release](../../releases/latest),
+then unpack it and copy the binary somewhere on your `PATH`:
+
+```sh
+tar -xzf tempest-linux-x86_64.tar.gz
+mkdir -p ~/.local/bin
+cp tempest-linux-x86_64/tempest ~/.local/bin/
+```
+### From source
+
+```sh
+make install      # builds tempest and installs it to ~/.local/bin
+make uninstall    # removes it
+```
+
+This installs for your user and doesn't need `sudo`. To install somewhere
+else, set `PREFIX` on both commands, e.g. `sudo make install PREFIX=/usr/local`.
+
 ## Building
 
-You need a C compiler with C23 support (GCC 13+ or recent Clang) and a POSIX
+You need a C compiler with C23 support (GCC 14+ or recent Clang) and a POSIX
 system (Linux, macOS, BSD).
 
 ```sh
