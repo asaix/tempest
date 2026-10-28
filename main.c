@@ -104,8 +104,12 @@ int main(int argc, char *argv[]) {
 
     // print raw before parsing so it's still printed if the response is malformed
     if (rawEnabled) {
-        printf("%s", req);
-        printf("%s", responseBuf);
+        char* body = strstr(responseBuf, "\r\n\r\n");
+        int headerLen = (body != NULL) ? (int)(body + 4 - responseBuf) : (int)strlen(responseBuf);
+
+        printf("\x1b[90m%s", req);
+        printf("%.*s\x1b[0m", headerLen, responseBuf);
+        printf("\x1b[38;5;141m%s\x1b[0m", responseBuf + headerLen);
     }
 
     // == PARSE RESPONSE AND PRINT == 
@@ -122,7 +126,7 @@ int main(int argc, char *argv[]) {
 
     if (responseCode == 200) {
         if (!rawEnabled) {
-            printf("%s", bodyBuf);
+            printf("\x1b[38;5;141m%s\x1b[0m", bodyBuf); // violet
         }
     }
     else if (responseCode == -1) {
