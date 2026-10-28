@@ -1,8 +1,8 @@
 # tempest
 
-Small learner project that allows you to get the weather in your terminal.
+Small tool that allows you to get the weather in your terminal.
 
-tempest is a tiny C program that fetches the current conditions for a city from
+tempest is a tiny C program that fetches the current weather conditions for a city from
 [wttr.is](https://wttr.is) and prints them.
 
 ```
