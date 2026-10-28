@@ -1,0 +1,170 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="1120" viewBox="0 0 920 1120" role="img" aria-labelledby="title desc">
+  <title id="title">tempest state diagram</title>
+  <desc id="desc">States tempest moves through from argument parsing to printing the forecast, with the exit code for each failure.</desc>
+  <style>
+    .bg      { fill: #ffffff; }
+    .box     { fill: #f3f6fb; stroke: #4a6fa5; stroke-width: 1.5; }
+    .exit    { fill: #fdf1f1; stroke: #c0392b; stroke-width: 1.5; }
+    .group   { fill: none; stroke: #8a94a6; stroke-width: 1.2; stroke-dasharray: 6 4; }
+    .flow    { fill: none; stroke: #4a6fa5; stroke-width: 1.6; }
+    .err     { fill: none; stroke: #c0392b; stroke-width: 1.4; }
+    .head    { fill: #4a6fa5; }
+    .errhead { fill: #c0392b; }
+    .dot     { fill: #1f2937; }
+    .ring    { fill: none; stroke: #1f2937; stroke-width: 2; }
+    .junction { fill: #c0392b; }
+    text     { font-family: system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; fill: #1f2937; }
+    .title   { font-size: 15px; font-weight: 600; text-anchor: middle; }
+    .sub     { font-size: 11.5px; fill: #4b5563; text-anchor: middle; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .label   { font-size: 12px; fill: #374151; }
+    .errlabel { font-size: 12px; fill: #b03a2e; text-anchor: middle; }
+    .exittitle { font-size: 15px; font-weight: 600; text-anchor: middle; fill: #b03a2e; }
+    .note    { font-size: 12px; fill: #6b7280; font-style: italic; }
+    @media (prefers-color-scheme: dark) {
+      .bg      { fill: #0d1117; }
+      .box     { fill: #161f2e; stroke: #79a3e0; }
+      .exit    { fill: #2a1717; stroke: #f07167; }
+      .group   { stroke: #6b7280; }
+      .flow    { stroke: #79a3e0; }
+      .err     { stroke: #f07167; }
+      .head    { fill: #79a3e0; }
+      .errhead, .junction { fill: #f07167; }
+      .dot     { fill: #e6edf3; }
+      .ring    { stroke: #e6edf3; }
+      text     { fill: #e6edf3; }
+      .sub     { fill: #9ca3af; }
+      .label   { fill: #c9d1d9; }
+      .errlabel, .exittitle { fill: #f4a39c; }
+      .note    { fill: #9ca3af; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path class="head" d="M0,0 L10,5 L0,10 z"/>
+    </marker>
+    <marker id="errarrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path class="errhead" d="M0,0 L10,5 L0,10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="920" height="1120" rx="12"/>
+
+  <!-- shared deadline group -->
+  <rect class="group" x="20" y="352" width="388" height="292" rx="10"/>
+  <text class="note" x="32" y="638">shared 10 s deadline</text>
+
+  <!-- start -->
+  <circle class="dot" cx="270" cy="34" r="9"/>
+  <line class="flow" x1="270" y1="43" x2="270" y2="68" marker-end="url(#arrow)"/>
+
+  <!-- main states -->
+  <rect class="box" x="150" y="70" width="240" height="56" rx="10"/>
+  <text class="title" x="270" y="93">Parse arguments</text>
+  <text class="sub" x="270" y="112">tempest &lt;city&gt; [--raw]</text>
+
+  <rect class="box" x="150" y="170" width="240" height="56" rx="10"/>
+  <text class="title" x="270" y="193">Build GET request</text>
+  <text class="sub" x="270" y="212">GET /&lt;url-encoded city&gt;?0T</text>
+
+  <rect class="box" x="150" y="270" width="240" height="56" rx="10"/>
+  <text class="title" x="270" y="293">Resolve host</text>
+  <text class="sub" x="270" y="312">getaddrinfo("wttr.is", "http")</text>
+
+  <rect class="box" x="150" y="370" width="240" height="56" rx="10"/>
+  <text class="title" x="270" y="393">Connect</text>
+  <text class="sub" x="270" y="412">non-blocking connect + poll</text>
+
+  <rect class="box" x="150" y="470" width="240" height="56" rx="10"/>
+  <text class="title" x="270" y="493">Send request</text>
+  <text class="sub" x="270" y="512">sendall() until every byte is out</text>
+
+  <rect class="box" x="150" y="570" width="240" height="56" rx="10"/>
+  <text class="title" x="270" y="593">Receive response</text>
+  <text class="sub" x="270" y="612">recv() until the server closes</text>
+
+  <rect class="box" x="150" y="670" width="240" height="56" rx="10"/>
+  <text class="title" x="270" y="693">Echo raw exchange</text>
+  <text class="sub" x="270" y="712">only with --raw</text>
+
+  <rect class="box" x="150" y="770" width="240" height="56" rx="10"/>
+  <text class="title" x="270" y="793">Parse response</text>
+  <text class="sub" x="270" y="812">headers + body, Content-Length</text>
+
+  <rect class="box" x="150" y="870" width="240" height="56" rx="10"/>
+  <text class="title" x="270" y="893">Check status code</text>
+  <text class="sub" x="270" y="912">read from the status line</text>
+
+  <rect class="box" x="150" y="970" width="240" height="56" rx="10"/>
+  <text class="title" x="270" y="993">Print forecast</text>
+  <text class="sub" x="270" y="1012">body to stdout unless --raw</text>
+
+  <!-- main flow -->
+  <line class="flow" x1="270" y1="126" x2="270" y2="168" marker-end="url(#arrow)"/>
+  <line class="flow" x1="270" y1="226" x2="270" y2="268" marker-end="url(#arrow)"/>
+  <line class="flow" x1="270" y1="326" x2="270" y2="368" marker-end="url(#arrow)"/>
+  <line class="flow" x1="270" y1="426" x2="270" y2="468" marker-end="url(#arrow)"/>
+  <line class="flow" x1="270" y1="526" x2="270" y2="568" marker-end="url(#arrow)"/>
+  <line class="flow" x1="270" y1="626" x2="270" y2="668" marker-end="url(#arrow)"/>
+  <text class="label" x="280" y="660">connection closed</text>
+  <line class="flow" x1="270" y1="726" x2="270" y2="768" marker-end="url(#arrow)"/>
+  <line class="flow" x1="270" y1="826" x2="270" y2="868" marker-end="url(#arrow)"/>
+  <line class="flow" x1="270" y1="926" x2="270" y2="968" marker-end="url(#arrow)"/>
+  <text class="label" x="280" y="952">200 OK</text>
+  <line class="flow" x1="270" y1="1026" x2="270" y2="1066" marker-end="url(#arrow)"/>
+
+  <!-- end -->
+  <circle class="ring" cx="270" cy="1080" r="12"/>
+  <circle class="dot" cx="270" cy="1080" r="7"/>
+  <text class="label" x="292" y="1084">exit 0</text>
+
+  <!-- self loops -->
+  <path class="flow" d="M150,386 C100,358 100,438 150,410" marker-end="url(#arrow)"/>
+  <text class="label" x="104" y="402" text-anchor="end">next address</text>
+  <path class="flow" d="M150,486 C100,458 100,538 150,510" marker-end="url(#arrow)"/>
+  <text class="label" x="104" y="502" text-anchor="end">partial write</text>
+  <path class="flow" d="M150,586 C100,558 100,638 150,610" marker-end="url(#arrow)"/>
+  <text class="label" x="104" y="602" text-anchor="end">more data</text>
+
+  <!-- exit 2 -->
+  <line class="err" x1="390" y1="98" x2="678" y2="98" marker-end="url(#errarrow)"/>
+  <text class="errlabel" x="535" y="90">missing location / bad flag</text>
+  <rect class="exit" x="680" y="70" width="210" height="56" rx="28"/>
+  <text class="exittitle" x="785" y="93">exit 2</text>
+  <text class="sub" x="785" y="112">bad arguments</text>
+
+  <!-- exit 4 -->
+  <line class="err" x1="390" y1="198" x2="678" y2="198" marker-end="url(#errarrow)"/>
+  <text class="errlabel" x="535" y="190">allocation failed / buffer too small</text>
+  <rect class="exit" x="680" y="170" width="210" height="56" rx="28"/>
+  <text class="exittitle" x="785" y="193">exit 4</text>
+  <text class="sub" x="785" y="212">memory error</text>
+
+  <!-- exit 3: network errors converge on a bus -->
+  <line class="err" x1="390" y1="298" x2="610" y2="298"/>
+  <text class="errlabel" x="500" y="290">DNS lookup failed</text>
+  <line class="err" x1="390" y1="398" x2="610" y2="398"/>
+  <text class="errlabel" x="500" y="390">no address connected</text>
+  <line class="err" x1="390" y1="498" x2="610" y2="498"/>
+  <text class="errlabel" x="500" y="490">send error / timeout</text>
+  <line class="err" x1="390" y1="598" x2="610" y2="598"/>
+  <text class="errlabel" x="505" y="590">recv error / timeout / overflow</text>
+  <line class="err" x1="610" y1="298" x2="610" y2="598"/>
+  <circle class="junction" cx="610" cy="298" r="3"/>
+  <circle class="junction" cx="610" cy="398" r="3"/>
+  <circle class="junction" cx="610" cy="498" r="3"/>
+  <circle class="junction" cx="610" cy="598" r="3"/>
+  <line class="err" x1="610" y1="448" x2="678" y2="448" marker-end="url(#errarrow)"/>
+  <rect class="exit" x="680" y="420" width="210" height="56" rx="28"/>
+  <text class="exittitle" x="785" y="443">exit 3</text>
+  <text class="sub" x="785" y="462">network error</text>
+
+  <!-- exit 5 -->
+  <line class="err" x1="390" y1="798" x2="678" y2="798" marker-end="url(#errarrow)"/>
+  <text class="errlabel" x="535" y="790">no header end / short body</text>
+  <line class="err" x1="390" y1="898" x2="678" y2="898" marker-end="url(#errarrow)"/>
+  <text class="errlabel" x="535" y="890">status ≠ 200 / unreadable</text>
+  <rect class="exit" x="680" y="770" width="210" height="156" rx="28"/>
+  <text class="exittitle" x="785" y="838">exit 5</text>
+  <text class="sub" x="785" y="858">malformed response</text>
+  <text class="sub" x="785" y="874">or invalid location</text>
+</svg>
